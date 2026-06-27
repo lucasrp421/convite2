@@ -39,21 +39,22 @@ html, body {
 #envelope {
     width: 100vw;
     height: 100vh;
-    object-fit: cover;   /* cobre 100% sem bordas pretas */
+    object-fit: cover;
     object-position: center;
     cursor: pointer;
     display: block;
 }
 
-/* ===== Tela 2: Vídeo — sem bordas pretas ===== */
+/* ===== Tela 2: Vídeo ===== */
 #videoScreen {
     background: #000;
+    /* Pré-carrega visualmente para evitar flash preto */
 }
 
 #openingVideo {
     width: 100vw;
     height: 100vh;
-    object-fit: cover;   /* preenche a tela toda */
+    object-fit: cover;
     object-position: center;
     background: #000;
     display: block;
@@ -62,40 +63,44 @@ html, body {
 /* ===== Tela 3: Convite principal ===== */
 #inviteScreen {
     background: #000;
+    display: flex;
     align-items: stretch;
+    padding: 0;
 }
 
+/* Container relativo que preenche a tela toda */
 .invite-wrapper {
     position: relative;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* Imagem cobre 100% da tela — igual ao envelope */
+.main-invite {
+    position: absolute;
+    inset: 0;
     width: 100%;
     height: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-/* Imagem ocupa a tela menos a área dos botões */
-.main-invite {
+    object-fit: cover;
+    object-position: center top;
     display: block;
-    width: 100%;
-    /* Reserva espaço para a faixa de botões em baixo */
-    height: calc(100vh - 100px);
-    object-fit: contain;   /* contain para não cortar o convite */
-    object-position: top center;
-    flex-shrink: 0;
 }
 
-/* Botões na faixa inferior, sempre visíveis */
+/* Botões absolutamente posicionados SOBRE a imagem, na base */
 .buttons-row {
-    width: 100%;
-    height: 100px;
-    flex-shrink: 0;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 10;
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 4vw;
-    padding: 8px 4vw max(8px, env(safe-area-inset-bottom));
-    background: rgba(0,0,0,0.6);
+    gap: 3vw;
+    padding: 14px 4vw max(16px, env(safe-area-inset-bottom));
+    /* gradiente sutil para os ícones não sumam na imagem clara */
+    background: linear-gradient(to top, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0) 100%);
 }
 
 .btn-link {
@@ -104,13 +109,17 @@ html, body {
     padding: 0;
     margin: 0;
     cursor: pointer;
-    flex: 0 1 auto;
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .buttons-row img {
-    width: 18vw;
-    max-width: 88px;
-    min-width: 54px;
+    width: 17vw;
+    max-width: 82px;
+    min-width: 52px;
+    height: auto;
     display: block;
     transition: transform .15s ease;
 }
