@@ -1,16 +1,16 @@
-const opening      = document.getElementById("opening");
-const videoScreen  = document.getElementById("videoScreen");
-const inviteScreen = document.getElementById("inviteScreen");
+const opening       = document.getElementById("opening");
+const videoScreen   = document.getElementById("videoScreen");
+const inviteScreen  = document.getElementById("inviteScreen");
 const presentScreen = document.getElementById("presentScreen");
-const dressScreen  = document.getElementById("dressScreen");
+const dressScreen   = document.getElementById("dressScreen");
 
 const video   = document.getElementById("openingVideo");
 const bgMusic = document.getElementById("bgMusic");
 
-const confirmBtn = document.getElementById("confirmBtn");
-const localBtn   = document.getElementById("localBtn");
-const presentBtn = document.getElementById("presentBtn");
-const dressBtn   = document.getElementById("dressBtn");
+const confirmBtn  = document.getElementById("confirmBtn");
+const localBtn    = document.getElementById("localBtn");
+const presentBtn  = document.getElementById("presentBtn");
+const dressBtn    = document.getElementById("dressBtn");
 const backButtons = document.querySelectorAll("[data-back]");
 
 const LINK_CONFIRMAR = "https://wa.me/5561992959195";
@@ -23,20 +23,41 @@ function showScreen(s) {
     s.classList.add("active");
 }
 
-// ===== Tela inicial: clique em qualquer lugar abre o vídeo =====
+// ===== Eliminar flash preto: pré-posiciona o vídeo ANTES de mostrar a tela =====
+// O vídeo fica mudo e pausado no frame 0 enquanto aguarda o clique.
+// Assim quando a tela do vídeo aparecer, o frame já está pintado no canvas.
+video.muted = true;
+video.preload = "auto";
+
+// Assim que dados suficientes carregam, decodifica o primeiro frame
+video.addEventListener("canplay", function onCanPlay() {
+    video.removeEventListener("canplay", onCanPlay);
+    // Joga brevemente mudo para forçar o decode do frame
+    video.play().then(function() {
+        video.pause();
+        video.currentTime = 0;
+        video.muted = false; // restaura
+    }).catch(function() {
+        video.muted = false;
+    });
+}, { once: true });
+
+// ===== Clique na tela inicial =====
 let started = false;
 
 opening.addEventListener("click", function() {
     if (started) return;
     started = true;
 
+    // Troca de tela — o frame já está pintado, sem flash preto
     showScreen(videoScreen);
 
     video.muted = false;
     video.currentTime = 0;
+
     video.play().catch(function(err) {
         console.warn("play bloqueado:", err);
-        // fallback: tenta com mute primeiro, depois desmuta
+        // Fallback mobile: começa mudo e desmuta
         video.muted = true;
         video.play().then(function() {
             video.muted = false;
@@ -44,7 +65,7 @@ opening.addEventListener("click", function() {
     });
 });
 
-// Música entra quando o vídeo estiver tocando (sem conflito de play duplo)
+// Música entra só depois que o vídeo estiver tocando (sem conflito de play duplo)
 video.addEventListener("play", function() {
     bgMusic.volume = 0.5;
     bgMusic.currentTime = 0;
