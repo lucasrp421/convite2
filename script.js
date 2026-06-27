@@ -4,8 +4,9 @@ const inviteScreen  = document.getElementById("inviteScreen");
 const presentScreen = document.getElementById("presentScreen");
 const dressScreen   = document.getElementById("dressScreen");
 
-const video   = document.getElementById("openingVideo");
-const bgMusic = document.getElementById("bgMusic");
+const video       = document.getElementById("openingVideo");
+const bgMusic     = document.getElementById("bgMusic");
+const buttonsRow  = document.querySelector(".buttons-row");
 
 const confirmBtn  = document.getElementById("confirmBtn");
 const localBtn    = document.getElementById("localBtn");
@@ -16,95 +17,93 @@ const backButtons = document.querySelectorAll("[data-back]");
 const LINK_CONFIRMAR = "https://wa.me/5561992959195";
 const LINK_LOCAL     = "https://share.google/awzooLA4ul8FZy1jJ";
 
-// =====================================================================
-// SOLUÇÃO DEFINITIVA PARA O FLASH PRETO
-//
-// Em vez de trocar "display:none → display:flex" (que causa frame preto),
-// usamos opacity para todas as transições. O vídeo começa a rodar MUDO
-// e INVISÍVEL logo que a página carrega — o navegador já decodifica os
-// frames. Quando o usuário clica, só aumentamos a opacidade: sem delay,
-// sem frame preto, sem jank.
-// =====================================================================
-
 const allScreens = [opening, videoScreen, inviteScreen, presentScreen, dressScreen];
+
+// ── Inicializa todas as telas no DOM mas invisíveis ──────────────────
+allScreens.forEach(s => {
+    s.style.display       = "flex";
+    s.style.opacity       = "0";
+    s.style.pointerEvents = "none";
+    s.style.zIndex        = "0";
+    s.style.transition    = "opacity 0.35s ease";
+});
 
 function showScreen(target) {
     allScreens.forEach(s => {
-        s.style.opacity = "0";
+        s.style.opacity       = "0";
         s.style.pointerEvents = "none";
-        s.style.zIndex = "0";
+        s.style.zIndex        = "0";
     });
-    target.style.opacity = "1";
+    target.style.opacity       = "1";
     target.style.pointerEvents = "auto";
-    target.style.zIndex = "1";
+    target.style.zIndex        = "1";
 }
 
-// Inicializa: só opening visível
-allScreens.forEach(s => {
-    s.style.display  = "flex";   // TODOS ficam no DOM com display:flex
-    s.style.opacity  = "0";
-    s.style.pointerEvents = "none";
-    s.style.zIndex   = "0";
-    s.style.transition = "opacity 0.35s ease";
-});
-opening.style.opacity = "1";
-opening.style.pointerEvents = "auto";
-opening.style.zIndex = "1";
+// Mostra tela inicial
+showScreen(opening);
 
-// Começa o vídeo MUDO assim que possível — pré-aquece o decoder
+// ── Pré-aquece o vídeo silenciosamente ──────────────────────────────
+// O vídeo roda mudo desde o início: decoder já tem frames prontos.
+// Assim quando o usuário clicar, não há frame preto — só reveal de opacity.
 video.muted = true;
-video.currentTime = 0;
-video.play().catch(() => {});   // silencioso; pode falhar em alguns browsers
+video.play().catch(() => {});
 
-// =====================================================================
-// CLIQUE NA TELA INICIAL
-// =====================================================================
+// ── Temporizador para mostrar botões 2s antes do fim do vídeo ────────
+let buttonTimerSet = false;
+
+video.addEventListener("timeupdate", function () {
+    if (buttonTimerSet) return;
+    const remaining = video.duration - video.currentTime;
+    if (!isNaN(remaining) && remaining <= 2) {
+        buttonTimerSet = true;
+        // Animação: botões sobem da posição inicial
+        buttonsRow.classList.add("visible");
+    }
+});
+
+// ── Clique na tela inicial ───────────────────────────────────────────
 let started = false;
 
 opening.addEventListener("click", function () {
     if (started) return;
     started = true;
 
-    // Reinicia do frame 0 e desmuta — o frame já está pintado pelo pré-aquecimento
+    // Reinicia do frame 0 e desmuta — frame já está pintado
     video.currentTime = 0;
     video.muted = false;
+    buttonTimerSet = false;
+    buttonsRow.classList.remove("visible");
 
-    // Garante que está tocando
     video.play().catch(function () {
-        // Fallback: alguns browsers exigem muted para autoplay
         video.muted = true;
-        video.play().then(function () {
-            video.muted = false;
-        }).catch(function () {});
+        video.play().then(function () { video.muted = false; }).catch(() => {});
     });
 
-    // Liga a música junto com o vídeo
+    // Música — disparada diretamente pelo clique do usuário
     bgMusic.volume = 0.5;
     bgMusic.currentTime = 0;
-    bgMusic.play().catch(function () {
-        // Alguns browsers bloqueiam áudio sem interação prévia
-        // O clique do usuário É a interação — deve funcionar
-        console.warn("bgMusic bloqueada");
+    bgMusic.play().catch(function (e) {
+        console.warn("bgMusic bloqueada:", e);
     });
 
-    // Revela a tela do vídeo com fade
     showScreen(videoScreen);
 });
 
-// Fim do vídeo → convite
+// ── Fim do vídeo → convite (botões já visíveis, ficam lá) ────────────
 video.addEventListener("ended", function () {
     showScreen(inviteScreen);
+    // Garante que os botões estão visíveis ao chegar no convite
+    buttonsRow.classList.add("visible");
 });
 
-// Toque no vídeo pula para o fim
+// Toque no vídeo pula para o fim (2s antes para acionar animação)
 video.addEventListener("click", function () {
     if (!started) return;
-    video.currentTime = video.duration - 0.1 || 9999;
+    const jumpTo = video.duration ? video.duration - 2.1 : 9999;
+    video.currentTime = jumpTo;
 });
 
-// =====================================================================
-// BOTÕES DO CONVITE
-// =====================================================================
+// ── Botões do convite ────────────────────────────────────────────────
 presentBtn.addEventListener("click", function () { showScreen(presentScreen); });
 dressBtn.addEventListener("click",   function () { showScreen(dressScreen); });
 confirmBtn.addEventListener("click", function () { window.open(LINK_CONFIRMAR, "_blank"); });
@@ -114,9 +113,9 @@ backButtons.forEach(function (btn) {
     btn.addEventListener("click", function () { showScreen(inviteScreen); });
 });
 
-// Retoma música se app voltar ao foco
+// ── Retoma música ao voltar para o app ───────────────────────────────
 document.addEventListener("visibilitychange", function () {
     if (!document.hidden && started && bgMusic.paused && videoScreen.style.opacity !== "1") {
-        bgMusic.play().catch(function () {});
+        bgMusic.play().catch(() => {});
     }
 });
