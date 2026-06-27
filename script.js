@@ -16,85 +16,107 @@ const backButtons = document.querySelectorAll("[data-back]");
 const LINK_CONFIRMAR = "https://wa.me/5561992959195";
 const LINK_LOCAL     = "https://share.google/awzooLA4ul8FZy1jJ";
 
+// =====================================================================
+// SOLUÇÃO DEFINITIVA PARA O FLASH PRETO
+//
+// Em vez de trocar "display:none → display:flex" (que causa frame preto),
+// usamos opacity para todas as transições. O vídeo começa a rodar MUDO
+// e INVISÍVEL logo que a página carrega — o navegador já decodifica os
+// frames. Quando o usuário clica, só aumentamos a opacidade: sem delay,
+// sem frame preto, sem jank.
+// =====================================================================
+
 const allScreens = [opening, videoScreen, inviteScreen, presentScreen, dressScreen];
 
-function showScreen(s) {
-    allScreens.forEach(x => x.classList.remove("active"));
-    s.classList.add("active");
+function showScreen(target) {
+    allScreens.forEach(s => {
+        s.style.opacity = "0";
+        s.style.pointerEvents = "none";
+        s.style.zIndex = "0";
+    });
+    target.style.opacity = "1";
+    target.style.pointerEvents = "auto";
+    target.style.zIndex = "1";
 }
 
-// ===== Eliminar flash preto: pré-posiciona o vídeo ANTES de mostrar a tela =====
-// O vídeo fica mudo e pausado no frame 0 enquanto aguarda o clique.
-// Assim quando a tela do vídeo aparecer, o frame já está pintado no canvas.
+// Inicializa: só opening visível
+allScreens.forEach(s => {
+    s.style.display  = "flex";   // TODOS ficam no DOM com display:flex
+    s.style.opacity  = "0";
+    s.style.pointerEvents = "none";
+    s.style.zIndex   = "0";
+    s.style.transition = "opacity 0.35s ease";
+});
+opening.style.opacity = "1";
+opening.style.pointerEvents = "auto";
+opening.style.zIndex = "1";
+
+// Começa o vídeo MUDO assim que possível — pré-aquece o decoder
 video.muted = true;
-video.preload = "auto";
+video.currentTime = 0;
+video.play().catch(() => {});   // silencioso; pode falhar em alguns browsers
 
-// Assim que dados suficientes carregam, decodifica o primeiro frame
-video.addEventListener("canplay", function onCanPlay() {
-    video.removeEventListener("canplay", onCanPlay);
-    // Joga brevemente mudo para forçar o decode do frame
-    video.play().then(function() {
-        video.pause();
-        video.currentTime = 0;
-        video.muted = false; // restaura
-    }).catch(function() {
-        video.muted = false;
-    });
-}, { once: true });
-
-// ===== Clique na tela inicial =====
+// =====================================================================
+// CLIQUE NA TELA INICIAL
+// =====================================================================
 let started = false;
 
-opening.addEventListener("click", function() {
+opening.addEventListener("click", function () {
     if (started) return;
     started = true;
 
-    // Troca de tela — o frame já está pintado, sem flash preto
-    showScreen(videoScreen);
-
-    video.muted = false;
+    // Reinicia do frame 0 e desmuta — o frame já está pintado pelo pré-aquecimento
     video.currentTime = 0;
+    video.muted = false;
 
-    video.play().catch(function(err) {
-        console.warn("play bloqueado:", err);
-        // Fallback mobile: começa mudo e desmuta
+    // Garante que está tocando
+    video.play().catch(function () {
+        // Fallback: alguns browsers exigem muted para autoplay
         video.muted = true;
-        video.play().then(function() {
+        video.play().then(function () {
             video.muted = false;
-        }).catch(function(e) { console.warn(e); });
+        }).catch(function () {});
     });
-});
 
-// Música entra só depois que o vídeo estiver tocando (sem conflito de play duplo)
-video.addEventListener("play", function() {
+    // Liga a música junto com o vídeo
     bgMusic.volume = 0.5;
     bgMusic.currentTime = 0;
-    bgMusic.play().catch(function() {});
-}, { once: true });
+    bgMusic.play().catch(function () {
+        // Alguns browsers bloqueiam áudio sem interação prévia
+        // O clique do usuário É a interação — deve funcionar
+        console.warn("bgMusic bloqueada");
+    });
+
+    // Revela a tela do vídeo com fade
+    showScreen(videoScreen);
+});
 
 // Fim do vídeo → convite
-video.addEventListener("ended", function() {
+video.addEventListener("ended", function () {
     showScreen(inviteScreen);
 });
 
 // Toque no vídeo pula para o fim
-video.addEventListener("click", function() {
+video.addEventListener("click", function () {
+    if (!started) return;
     video.currentTime = video.duration - 0.1 || 9999;
 });
 
-// ===== Botões do convite =====
-presentBtn.addEventListener("click", function() { showScreen(presentScreen); });
-dressBtn.addEventListener("click",   function() { showScreen(dressScreen); });
-confirmBtn.addEventListener("click", function() { window.open(LINK_CONFIRMAR, "_blank"); });
-localBtn.addEventListener("click",   function() { window.open(LINK_LOCAL, "_blank"); });
+// =====================================================================
+// BOTÕES DO CONVITE
+// =====================================================================
+presentBtn.addEventListener("click", function () { showScreen(presentScreen); });
+dressBtn.addEventListener("click",   function () { showScreen(dressScreen); });
+confirmBtn.addEventListener("click", function () { window.open(LINK_CONFIRMAR, "_blank"); });
+localBtn.addEventListener("click",   function () { window.open(LINK_LOCAL, "_blank"); });
 
-backButtons.forEach(function(btn) {
-    btn.addEventListener("click", function() { showScreen(inviteScreen); });
+backButtons.forEach(function (btn) {
+    btn.addEventListener("click", function () { showScreen(inviteScreen); });
 });
 
-// Retoma música ao voltar para o app
-document.addEventListener("visibilitychange", function() {
-    if (!document.hidden && started && bgMusic.paused && !videoScreen.classList.contains("active")) {
-        bgMusic.play().catch(function() {});
+// Retoma música se app voltar ao foco
+document.addEventListener("visibilitychange", function () {
+    if (!document.hidden && started && bgMusic.paused && videoScreen.style.opacity !== "1") {
+        bgMusic.play().catch(function () {});
     }
 });
