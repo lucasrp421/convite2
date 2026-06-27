@@ -18,18 +18,17 @@ html, body {
     inset: 0;
     width: 100vw;
     height: 100vh;
-    display: none;
+    display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     opacity: 0;
-    transition: opacity .4s ease;
+    pointer-events: none;
+    z-index: 0;
+    transition: opacity 0.35s ease;
 }
 
-.screen.active {
-    display: flex;
-    opacity: 1;
-}
+/* Visibilidade controlada 100% pelo JS via opacity + pointer-events + z-index */
 
 /* ===== Tela 1: Envelope ===== */
 #opening {
@@ -106,7 +105,7 @@ html, body {
 /* Botões SOBRE a imagem, posicionados dentro do quadro branco */
 .buttons-row {
     position: absolute;
-    bottom: 17%;   /* sobe para dentro do quadro branco */
+    bottom: calc(17% + 10px);
     left: 0;
     right: 0;
     z-index: 10;
