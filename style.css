@@ -30,18 +30,22 @@ html, body {
     opacity: 1;
 }
 
-/* ===== Tela 1: Envelope ===== */
+/* ===== Tela 1: Envelope — cobre a tela inteira ===== */
 #opening {
     background: #000;
+    padding: 0;
 }
 
 #envelope {
-    width: min(75vw, 480px);
+    width: 100vw;
+    height: 100vh;
+    object-fit: cover;   /* cobre 100% sem bordas pretas */
+    object-position: center;
     cursor: pointer;
-    /* SEM animação — estático conforme solicitado */
+    display: block;
 }
 
-/* ===== Tela 2: Vídeo ===== */
+/* ===== Tela 2: Vídeo — sem bordas pretas ===== */
 #videoScreen {
     background: #000;
 }
@@ -49,8 +53,10 @@ html, body {
 #openingVideo {
     width: 100vw;
     height: 100vh;
-    object-fit: contain;
+    object-fit: cover;   /* preenche a tela toda */
+    object-position: center;
     background: #000;
+    display: block;
 }
 
 /* ===== Tela 3: Convite principal ===== */
@@ -59,37 +65,37 @@ html, body {
     align-items: stretch;
 }
 
-/* Container que ocupa toda a tela */
 .invite-wrapper {
     position: relative;
     width: 100%;
     height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
-/* Imagem do convite cobre 100% da tela */
+/* Imagem ocupa a tela menos a área dos botões */
 .main-invite {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
     display: block;
+    width: 100%;
+    /* Reserva espaço para a faixa de botões em baixo */
+    height: calc(100vh - 100px);
+    object-fit: contain;   /* contain para não cortar o convite */
+    object-position: top center;
+    flex-shrink: 0;
 }
 
-/* Botões flutuam sobre a imagem, ancorados na parte inferior */
+/* Botões na faixa inferior, sempre visíveis */
 .buttons-row {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
+    width: 100%;
+    height: 100px;
+    flex-shrink: 0;
     display: flex;
     justify-content: center;
     align-items: center;
     gap: 4vw;
-    padding: 10px 4vw max(14px, env(safe-area-inset-bottom));
-    flex-wrap: nowrap;
-    /* fundo sutil para legibilidade sobre a imagem */
-    background: linear-gradient(to top, rgba(0,0,0,0.45) 0%, transparent 100%);
+    padding: 8px 4vw max(8px, env(safe-area-inset-bottom));
+    background: rgba(0,0,0,0.6);
 }
 
 .btn-link {
@@ -103,8 +109,8 @@ html, body {
 
 .buttons-row img {
     width: 18vw;
-    max-width: 90px;
-    min-width: 56px;
+    max-width: 88px;
+    min-width: 54px;
     display: block;
     transition: transform .15s ease;
 }
