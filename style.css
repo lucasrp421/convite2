@@ -19,6 +19,7 @@ html, body {
     width: 100vw;
     height: 100vh;
     display: none;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
     opacity: 0;
@@ -30,25 +31,44 @@ html, body {
     opacity: 1;
 }
 
-/* ===== Tela 1: Envelope — cobre a tela inteira ===== */
+/* ===== Tela 1: Envelope ===== */
 #opening {
     background: #000;
-    padding: 0;
+    cursor: pointer;
+    /* A section inteira é clicável */
+    position: fixed;
+    inset: 0;
 }
 
 #envelope {
     width: 100vw;
-    height: 100vh;
+    height: calc(100vh - 60px); /* deixa espaço pro texto */
     object-fit: cover;
     object-position: center;
-    cursor: pointer;
     display: block;
+    pointer-events: none; /* clique vai para a section pai */
+}
+
+#tapHint {
+    margin: 0;
+    padding: 10px 0 max(14px, env(safe-area-inset-bottom));
+    color: #f3d9a4;
+    font-size: 16px;
+    letter-spacing: 0.04em;
+    text-align: center;
+    /* pisca suavemente para chamar atenção */
+    animation: pulse 2s ease-in-out infinite;
+    pointer-events: none;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.45; }
 }
 
 /* ===== Tela 2: Vídeo ===== */
 #videoScreen {
     background: #000;
-    /* Pré-carrega visualmente para evitar flash preto */
 }
 
 #openingVideo {
@@ -56,19 +76,15 @@ html, body {
     height: 100vh;
     object-fit: cover;
     object-position: center;
-    background: #000;
     display: block;
 }
 
 /* ===== Tela 3: Convite principal ===== */
 #inviteScreen {
     background: #000;
-    display: flex;
-    align-items: stretch;
     padding: 0;
 }
 
-/* Container relativo que preenche a tela toda */
 .invite-wrapper {
     position: relative;
     width: 100vw;
@@ -76,7 +92,7 @@ html, body {
     overflow: hidden;
 }
 
-/* Imagem cobre 100% da tela — igual ao envelope */
+/* Imagem cobre a tela toda */
 .main-invite {
     position: absolute;
     inset: 0;
@@ -87,7 +103,7 @@ html, body {
     display: block;
 }
 
-/* Botões absolutamente posicionados SOBRE a imagem, na base */
+/* Botões SOBRE a imagem, fixados na base */
 .buttons-row {
     position: absolute;
     bottom: 0;
@@ -98,9 +114,8 @@ html, body {
     justify-content: center;
     align-items: center;
     gap: 3vw;
-    padding: 14px 4vw max(16px, env(safe-area-inset-bottom));
-    /* gradiente sutil para os ícones não sumam na imagem clara */
-    background: linear-gradient(to top, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0) 100%);
+    padding: 12px 4vw max(16px, env(safe-area-inset-bottom));
+    background: linear-gradient(to top, rgba(0,0,0,0.5) 0%, transparent 100%);
 }
 
 .btn-link {
@@ -110,9 +125,6 @@ html, body {
     margin: 0;
     cursor: pointer;
     flex: 0 0 auto;
-    display: flex;
-    align-items: center;
-    justify-content: center;
 }
 
 .buttons-row img {
@@ -128,7 +140,7 @@ html, body {
     transform: scale(0.92);
 }
 
-/* ===== Sub-páginas (Presentes / Dress Code) ===== */
+/* ===== Sub-páginas ===== */
 .subpage {
     background: #000;
     flex-direction: column;
