@@ -13,6 +13,7 @@ html, body {
     font-family: Georgia, 'Times New Roman', serif;
 }
 
+/* Todas as telas ficam no DOM; JS controla opacity/pointer-events/z-index */
 .screen {
     position: fixed;
     inset: 0;
@@ -28,41 +29,43 @@ html, body {
     transition: opacity 0.35s ease;
 }
 
-/* Visibilidade controlada 100% pelo JS via opacity + pointer-events + z-index */
-
 /* ===== Tela 1: Envelope ===== */
 #opening {
     background: #000;
     cursor: pointer;
-    /* A section inteira é clicável */
-    position: fixed;
-    inset: 0;
+    justify-content: flex-end; /* empurra o texto para baixo */
 }
 
 #envelope {
-    width: 100vw;
-    height: calc(100vh - 60px); /* deixa espaço pro texto */
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
     object-fit: cover;
     object-position: center;
     display: block;
-    pointer-events: none; /* clique vai para a section pai */
+    pointer-events: none;
 }
 
 #tapHint {
+    position: relative; /* fica sobre o envelope */
+    z-index: 2;
     margin: 0;
-    padding: 10px 0 max(14px, env(safe-area-inset-bottom));
+    margin-bottom: max(22px, env(safe-area-inset-bottom));
+    padding: 10px 24px;
     color: #f3d9a4;
     font-size: 16px;
-    letter-spacing: 0.04em;
+    font-family: Georgia, serif;
+    letter-spacing: 0.06em;
     text-align: center;
-    /* pisca suavemente para chamar atenção */
-    animation: pulse 2s ease-in-out infinite;
+    text-shadow: 0 1px 8px rgba(0,0,0,0.7);
     pointer-events: none;
+    animation: pulse 2s ease-in-out infinite;
 }
 
 @keyframes pulse {
     0%, 100% { opacity: 1; }
-    50%       { opacity: 0.45; }
+    50%       { opacity: 0.4; }
 }
 
 /* ===== Tela 2: Vídeo ===== */
@@ -91,7 +94,6 @@ html, body {
     overflow: hidden;
 }
 
-/* Imagem cobre a tela toda */
 .main-invite {
     position: absolute;
     inset: 0;
@@ -102,7 +104,7 @@ html, body {
     display: block;
 }
 
-/* Botões SOBRE a imagem, posicionados dentro do quadro branco */
+/* Botões sobre a imagem dentro do quadro branco */
 .buttons-row {
     position: absolute;
     bottom: calc(17% + 10px);
@@ -115,6 +117,18 @@ html, body {
     gap: 3vw;
     padding: 0 4vw;
     background: transparent;
+
+    /* Estado inicial: escondidos embaixo, prontos para subir */
+    opacity: 0;
+    transform: translateY(30px);
+    transition: none; /* controlado pelo JS via classe */
+}
+
+/* Classe adicionada pelo JS para animar entrada dos botões */
+.buttons-row.visible {
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity 0.6s ease, transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .btn-link {
