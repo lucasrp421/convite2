@@ -28,38 +28,52 @@ function showScreen(screenToShow) {
     screenToShow.classList.add("active");
 }
 
-// ===== Fluxo: Envelope -> Vídeo (+ música) -> Convite =====
-envelope.addEventListener("click", startExperience);
-envelope.addEventListener("touchend", startExperience, { passive: true });
-
+// ===== Fluxo: Envelope -> Vídeo -> Convite =====
 let started = false;
+
 function startExperience(e) {
     if (started) return;
     started = true;
-    if (e) e.preventDefault();
+    e.preventDefault();
 
     showScreen(videoScreen);
 
-    // Toca o vídeo e a música juntos
+    // FIX: Só dá play no vídeo primeiro.
+    // A música entra no evento 'play' do vídeo para evitar conflito no mobile
+    // (dois .play() simultâneos podem fazer o navegador rejeitar ambos).
     video.currentTime = 0;
     video.muted = false;
-    video.play().catch(() => {});
 
-    bgMusic.volume = 0.6;
-    bgMusic.currentTime = 0;
-    bgMusic.play().catch(() => {
-        // Alguns navegadores podem bloquear; tenta de novo no próximo toque
-    });
+    const playPromise = video.play();
+    if (playPromise !== undefined) {
+        playPromise.catch(err => {
+            console.warn("Vídeo bloqueado pelo navegador:", err);
+        });
+    }
 }
 
+// Quando o vídeo realmente começa a rodar, liga a música
+video.addEventListener("play", () => {
+    bgMusic.volume = 0.6;
+    bgMusic.currentTime = 0;
+    bgMusic.play().catch(err => {
+        console.warn("Música bloqueada pelo navegador:", err);
+    });
+}, { once: true }); // once: dispara só na primeira vez
+
+// Ao terminar o vídeo, vai para o convite
 video.addEventListener("ended", () => {
     showScreen(inviteScreen);
 });
 
-// Permite pular o vídeo tocando nele (opcional, mas comum em convites)
+// Toque no vídeo pula para o fim (comportamento comum em convites)
 video.addEventListener("click", () => {
-    video.currentTime = video.duration || 0;
+    video.currentTime = video.duration || 9999;
 });
+
+// Registra listeners no envelope (click + touchend para mobile)
+envelope.addEventListener("click", startExperience);
+envelope.addEventListener("touchend", startExperience, { passive: false });
 
 // ===== Botões do convite =====
 presentBtn.addEventListener("click", () => showScreen(presentScreen));
@@ -73,12 +87,12 @@ localBtn.addEventListener("click", () => {
     window.open(LINK_LOCAL, "_blank");
 });
 
-// ===== Botões de voltar (sempre retornam ao convite principal) =====
+// ===== Botões de voltar =====
 backButtons.forEach(btn => {
     btn.addEventListener("click", () => showScreen(inviteScreen));
 });
 
-// ===== Garante que a música continue tocando mesmo se o navegador pausar no background =====
+// ===== Retoma música se usuário voltar para o app =====
 document.addEventListener("visibilitychange", () => {
     if (!document.hidden && started && bgMusic.paused && !videoScreen.classList.contains("active")) {
         bgMusic.play().catch(() => {});

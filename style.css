@@ -38,12 +38,7 @@ html, body {
 #envelope {
     width: min(75vw, 480px);
     cursor: pointer;
-    animation: floatEnvelope 2.4s ease-in-out infinite;
-}
-
-@keyframes floatEnvelope {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-14px); }
+    /* SEM animação — estático conforme solicitado */
 }
 
 /* ===== Tela 2: Vídeo ===== */
@@ -61,35 +56,40 @@ html, body {
 /* ===== Tela 3: Convite principal ===== */
 #inviteScreen {
     background: #000;
-    align-items: flex-start;
+    align-items: stretch;
 }
 
+/* Container que ocupa toda a tela */
 .invite-wrapper {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
+    position: relative;
     width: 100%;
     height: 100%;
-    padding-bottom: 18px;
 }
 
+/* Imagem do convite cobre 100% da tela */
 .main-invite {
-    flex: 1 1 auto;
+    position: absolute;
+    inset: 0;
     width: 100%;
     height: 100%;
-    max-height: calc(100vh - 110px);
-    object-fit: contain;
+    object-fit: cover;
+    display: block;
 }
 
+/* Botões flutuam sobre a imagem, ancorados na parte inferior */
 .buttons-row {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
     display: flex;
     justify-content: center;
     align-items: center;
     gap: 4vw;
-    width: 100%;
-    padding: 10px 4vw 0;
+    padding: 10px 4vw max(14px, env(safe-area-inset-bottom));
     flex-wrap: nowrap;
+    /* fundo sutil para legibilidade sobre a imagem */
+    background: linear-gradient(to top, rgba(0,0,0,0.45) 0%, transparent 100%);
 }
 
 .btn-link {
