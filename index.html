@@ -10,12 +10,13 @@
 
 <!-- TELA 1: Envelope -->
 <section id="opening" class="screen active">
-    <img src="assets/envelope.png" id="envelope" alt="Toque para abrir">
+    <img src="assets/envelope.png" id="envelope" alt="Convite">
+    <p id="tapHint">Clique para abrir o convite</p>
 </section>
 
 <!-- TELA 2: Vídeo de abertura -->
 <section id="videoScreen" class="screen">
-    <video id="openingVideo" playsinline webkit-playsinline>
+    <video id="openingVideo" playsinline webkit-playsinline preload="auto">
         <source src="assets/opening.mp4" type="video/mp4">
     </video>
 </section>
@@ -24,20 +25,16 @@
 <section id="inviteScreen" class="screen">
     <div class="invite-wrapper">
         <img src="assets/invite-main.jpg" class="main-invite" alt="Convite">
-
         <div class="buttons-row">
             <button id="confirmBtn" class="btn-link">
                 <img src="assets/btn-confirmar.svg" alt="Confirmar presença">
             </button>
-
             <button id="localBtn" class="btn-link">
                 <img src="assets/btn-local.svg" alt="Local">
             </button>
-
             <button id="presentBtn" class="btn-link">
                 <img src="assets/btn-presentes.svg" alt="Presentes">
             </button>
-
             <button id="dressBtn" class="btn-link">
                 <img src="assets/btn-dress.svg" alt="Dress code">
             </button>
@@ -61,7 +58,6 @@
     </div>
 </section>
 
-<!-- Áudio de fundo -->
 <audio id="bgMusic" src="assets/music.mp3" loop preload="auto"></audio>
 
 <script src="script.js"></script>
