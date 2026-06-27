@@ -8,15 +8,22 @@
 </head>
 <body>
 
-<!-- TELA 1: Envelope -->
+<!--
+  ESTRATÉGIA ANTI-FLASH:
+  O vídeo fica rodando mudo e invisível (opacity:0, z-index:-1) DESDE O INÍCIO.
+  Quando o usuário clica, apenas revelamos o vídeo com fade — sem nenhuma
+  troca de display/visibility que cause frame preto.
+-->
+
+<!-- TELA 1: Envelope (fica por cima do vídeo que já está rodando atrás) -->
 <section id="opening" class="screen active">
     <img src="assets/envelope.png" id="envelope" alt="Convite">
     <p id="tapHint">Clique para abrir o convite</p>
 </section>
 
-<!-- TELA 2: Vídeo de abertura -->
+<!-- TELA 2: Vídeo — sempre no DOM, começa mudo/invisível -->
 <section id="videoScreen" class="screen">
-    <video id="openingVideo" playsinline webkit-playsinline preload="auto">
+    <video id="openingVideo" playsinline webkit-playsinline muted preload="auto">
         <source src="assets/opening.mp4" type="video/mp4">
     </video>
 </section>
@@ -42,7 +49,7 @@
     </div>
 </section>
 
-<!-- TELA 4: Sub-página Presentes -->
+<!-- TELA 4: Presentes -->
 <section id="presentScreen" class="screen subpage">
     <button class="backBtn" data-back>← Voltar</button>
     <div class="subpage-content">
@@ -50,7 +57,7 @@
     </div>
 </section>
 
-<!-- TELA 5: Sub-página Dress Code -->
+<!-- TELA 5: Dress Code -->
 <section id="dressScreen" class="screen subpage">
     <button class="backBtn" data-back>← Voltar</button>
     <div class="subpage-content">
@@ -59,7 +66,6 @@
 </section>
 
 <audio id="bgMusic" src="assets/music.mp3" loop preload="auto"></audio>
-
 <script src="script.js"></script>
 </body>
 </html>
